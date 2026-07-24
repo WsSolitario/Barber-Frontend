@@ -1,38 +1,49 @@
 # Barber-Frontend
 
-Aplicación web para reservas y operación administrativa de barberías, construida con Next.js.
+Aplicación web para reservas y operación administrativa de barberías. Ofrece una landing pública orientada a conversión, un flujo de reserva por disponibilidad y un panel para gestionar la operación diaria.
 
-## Getting Started
+## Capacidades
 
-First, run the development server:
+- Landing pública con portafolio, información de contacto y CTA de reserva.
+- Reserva de servicios, selección de horario y seguimiento de la cita.
+- Panel administrativo para calendario, pagos, reportes, usuarios, sucursales y media.
+- Autenticación con renovación de sesión mediante refresh token HTTP-only.
+- Integración con la API de Barber Backend y soporte de Stripe Checkout.
+
+## Tecnología
+
+- Next.js App Router y TypeScript
+- Tailwind CSS
+- TanStack Query para datos remotos
+- Zustand para estado de autenticación
+
+## Requisitos
+
+- Node.js 20 o superior
+- Barber Backend ejecutándose localmente o en un entorno accesible
+- Archivo `.env.local` con la URL de la API, basada en `.env.example`
+
+## Desarrollo
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre `http://localhost:3000` para la experiencia pública y `http://localhost:3000/admin` para el panel administrativo.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Calidad
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+## Estructura
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app`: rutas públicas y administrativas.
+- `src/components`: calendario, shell administrativo y proveedores.
+- `src/services`: clientes HTTP y servicios de API.
+- `src/stores`: estado local de sesión.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+No incluyas secretos, archivos `.env.local` ni credenciales de proveedores en commits.
