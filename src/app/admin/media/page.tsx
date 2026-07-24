@@ -1,0 +1,20 @@
+"use client";
+
+import Link from "next/link";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { httpClient } from "@/services/http-client";
+import { useAuthStore } from "@/stores/auth-store";
+
+type Media = { id: string; url: string; fileName: string; contentType: string; sizeBytes: number; altText?: string; createdAt: string };
+
+export default function MediaPage() {
+  const accessToken = useAuthStore((state) => state.accessToken); const hydrated = useAuthStore((state) => state.hydrated); const queryClient = useQueryClient(); const [error, setError] = useState(""); const [isUploading, setIsUploading] = useState(false);
+  const media = useQuery({ queryKey: ["media"], enabled: Boolean(accessToken) && hydrated, queryFn: async () => (await httpClient.get<Media[]>("/api/admin/media", { headers: { Authorization: `Bearer ${accessToken}` } })).data });
+  async function upload(file: File) { if (!accessToken) return; setError(""); setIsUploading(true); try { const { data } = await httpClient.post<{ asset: Media; uploadUrl: string }>("/api/admin/media/presign", { fileName: file.name, contentType: file.type, sizeBytes: file.size, altText: file.name.replace(/\.[^.]+$/, "") }, { headers: { Authorization: `Bearer ${accessToken}` } }); await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file }); await httpClient.post("/api/admin/gallery", { mediaId: data.asset.id, caption: data.asset.altText, sortOrder: 0 }, { headers: { Authorization: `Bearer ${accessToken}` } }); await queryClient.invalidateQueries({ queryKey: ["media"] }); } catch { setError("No fue posible subir la foto. Revisa CORS del bucket y los permisos de MinIO."); } finally { setIsUploading(false); } }
+  async function remove(asset: Media) { if (!accessToken || !window.confirm(`Eliminar ${asset.fileName}?`)) return; setError(""); try { await httpClient.delete(`/api/admin/media/${asset.id}`, { headers: { Authorization: `Bearer ${accessToken}` } }); await queryClient.invalidateQueries({ queryKey: ["media"] }); } catch { setError("No fue posible eliminar la foto."); } }
+  if (!hydrated) return <main className="p-8">Restaurando sesion...</main>;
+  if (!accessToken) return <main className="p-8"><Link href="/auth/login">Inicia sesion para administrar fotos.</Link></main>;
+  return <div className="p-5 md:p-8"><header><p className="text-xs font-bold uppercase tracking-[.18em] text-amber-700">Portafolio</p><h1 className="mt-2 text-3xl font-black tracking-tight">Fotos y evidencias de cortes</h1><p className="mt-2 text-stone-500">Cada foto se publica en la galeria de trabajos de la landing.</p></header><label className="mt-8 flex cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-amber-500 bg-amber-50 p-10 text-center"><span><strong className="block">{isUploading ? "Subiendo foto..." : "Subir foto de un corte"}</strong><small className="mt-2 block text-stone-500">JPEG, PNG o WebP. Maximo 5 MB.</small></span><input className="hidden" type="file" accept="image/jpeg,image/png,image/webp" disabled={isUploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) upload(file); }} /></label>{error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}<section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{media.data?.map((asset) => <article className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200" key={asset.id}><img className="aspect-square w-full object-cover" src={asset.url} alt={asset.altText ?? asset.fileName} /><div className="flex items-end justify-between gap-3 p-4"><div><p className="font-semibold">{asset.altText ?? asset.fileName}</p><p className="mt-1 text-xs text-stone-500">{Math.round(asset.sizeBytes / 1024)} KB</p></div><button className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700" onClick={() => remove(asset)}>Eliminar</button></div></article>)}</section></div>;
+}
