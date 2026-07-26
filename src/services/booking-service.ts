@@ -22,7 +22,7 @@ export async function getBarbers(branchId: string, serviceId: string): Promise<B
 }
 
 export async function getAvailability(branchId: string, serviceId: string, barberId: string, date: string): Promise<Availability> {
-  const { data } = await httpClient.get<Availability>("/api/public/availability", { params: { branchId, barberId, serviceIds: [serviceId], date } });
+  const { data } = await httpClient.get<Availability>("/api/public/availability", { params: { branchId, barberId, serviceId, date } });
   return data;
 }
 
