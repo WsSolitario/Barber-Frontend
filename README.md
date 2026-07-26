@@ -47,3 +47,13 @@ npm run build
 - `src/stores`: estado local de sesión.
 
 No incluyas secretos, archivos `.env.local` ni credenciales de proveedores en commits.
+
+## Despliegue Con PM2
+
+En el LXC frontend, desde el directorio clonado, ejecuta:
+
+```bash
+bash scripts/deploy.sh
+```
+
+El script actualiza `main`, instala dependencias, crea el build de producción con un heap de 1.5 GB y reinicia `barber-frontend` en PM2. Para la configuración con Nginx, el proceso se inicia en `127.0.0.1:3000`.

@@ -4,6 +4,7 @@ export type Branch = { id: string; name: string; address?: string; phone?: strin
 export type Service = { id: string; name: string; description?: string; price: string | number; durationMinutes: number; cleanupMinutes: number; depositRequired: string | number };
 export type Barber = { id: string; name: string; description?: string; specialties: string[] };
 export type AppointmentHold = { holdId: string; token: string; startAt: string; endAt: string; expiresAt: string };
+export type Availability = { durationMinutes: number; slots: { startAt: string; endAt: string }[] };
 
 export async function getBranches(): Promise<Branch[]> {
   const { data } = await httpClient.get<Branch[]>("/api/public/branches");
@@ -17,6 +18,11 @@ export async function getServices(branchId: string): Promise<Service[]> {
 
 export async function getBarbers(branchId: string, serviceId: string): Promise<Barber[]> {
   const { data } = await httpClient.get<Barber[]>("/api/public/barbers", { params: { branchId, serviceId } });
+  return data;
+}
+
+export async function getAvailability(branchId: string, serviceId: string, barberId: string, date: string): Promise<Availability> {
+  const { data } = await httpClient.get<Availability>("/api/public/availability", { params: { branchId, barberId, serviceIds: [serviceId], date } });
   return data;
 }
 
