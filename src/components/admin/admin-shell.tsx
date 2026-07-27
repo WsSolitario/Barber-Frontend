@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+
+import { httpClient } from "@/services/http-client";
+import { useAuthStore } from "@/stores/auth-store";
 
 const navigation = [
   { href: "/admin", label: "Resumen", icon: "01" },
@@ -14,13 +18,16 @@ const navigation = [
 
 export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const business = useQuery({ queryKey: ["business-settings"], enabled: Boolean(accessToken), queryFn: async () => (await httpClient.get<{ businessName?: string }>("/api/admin/settings", { headers: { Authorization: `Bearer ${accessToken}` } })).data });
+  const businessName = business.data?.businessName ?? "BARBER OS";
 
   return (
     <div className="min-h-screen bg-[#f4f3ed] text-[#172b34]">
       <aside className="border-b border-[#35515a] bg-[#10242c] px-5 py-5 text-[#f4f3ed] lg:fixed lg:inset-y-0 lg:w-64 lg:border-b-0 lg:border-r lg:px-6 lg:py-8">
         <Link className="flex items-center gap-3" href="/admin">
           <span className="grid size-10 place-items-center bg-[#d6f22a] font-[family-name:var(--font-bebas-neue)] text-2xl text-[#10242c]">B</span>
-          <span><strong className="block text-sm tracking-wide">BARBER OS</strong><small className="text-[#c8d2d2]">Panel administrativo</small></span>
+          <span><strong className="block max-w-40 truncate text-sm tracking-wide">{businessName}</strong><small className="text-[#c8d2d2]">Panel administrativo</small></span>
         </Link>
         <nav aria-label="Navegacion administrativa" className="mt-6 grid grid-cols-3 gap-1.5 lg:mt-12 lg:block lg:space-y-2">
           {navigation.map((item) => {
